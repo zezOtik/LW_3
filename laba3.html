@@ -1,0 +1,122 @@
+﻿<HTML>
+<BODY>
+<p>лаб раб №3</p>
+<canvas id='laba3' width='500' height='500'>
+<script>
+var canvas = document.getElementById('laba3');	
+var ctx = canvas.getContext('2d');
+alert('>.<')
+var parray = [];
+var pcount = 0;
+canvas.addEventListener("click", onClick);
+var Point = function(x, y) {
+	this.x = x;
+	this.y = y;
+}
+
+function sign(x) {
+	return (x > 0) ? 1 : (x < 0) ? -1 : 0;
+}
+
+function drawLine(x0, y0, x1, y1){
+	var x, y, dx, dy, incx, incy, pdx, pdy, es, el, error;
+	dx = x1 - x0; 
+	dy = y1 - y0; 	
+	incx = sign(dx);
+	incy = sign(dy);
+	if (dx < 0) 
+		dx = Math.abs(dx);
+	if (dy < 0) 
+		dy = Math.abs(dy);
+	if(dx > dy) {
+		pdx = incx; 
+		pdy = 0;
+		es = dy; 
+		el = dx;	
+	}
+	else {
+		pdx = 0;	
+		pdy = incy;
+		es = dx;
+		el = dy; 
+	}
+	x = x0;
+	y = y0;
+	error = el / 2;
+	ctx.fillRect(x, y, 1, 1);
+	for (t = 0; t < el; t++) {
+		error -= es;
+		if (error < 0){
+			error += el;
+			x += incx; 
+			y += incy;
+		}
+		else{
+			x += pdx; 
+			y += pdy; 
+		}
+		ctx.fillRect(x, y, 1, 1);
+	}
+}
+
+function B_basis(i, n, t) {
+	function f(n) {
+		return (n <= 1) ? 1 : n * f(n-1);
+	};
+	return (f(n) / (f(i) * f(n-i))) * Math.pow(t, i) * Math.pow(1-t, n-i);
+}
+
+function B_Point(p_arr, step){
+	if (step == undefined)
+		step = 0.01;
+	var res = [];
+	for (var t = 0; t < 1 + step; t += step) {
+		if (t > 1) 
+			t = 1;
+		var ind = res.length;
+		res[ind] = new Point(0, 0);
+		for (var i = 0; i < p_arr.length; i++) {
+			var b = B_basis(i, p_arr.length-1, t);
+			res[ind].x += p_arr[i].x * b;
+			res[ind].y += p_arr[i].y * b;
+		}
+	}
+	return res;
+}
+
+function B_Line(p_arr, rate) {
+	ctx.fillStyle = "black";
+	var i = 0;
+	function RateDraw() {
+		if (i >= p_arr.length - 1) 
+			return;
+		drawLine(p_arr[i].x, p_arr[i].y, p_arr[i+5].x, p_arr[i+5].y);
+		i++;
+		setTimeout(RateDraw, rate);
+	};
+	setTimeout(RateDraw, rate);
+}
+	
+function onClick(){	
+	ctx.fillStyle = "black";	
+	if (event.which == 1){			
+		var x = event.offsetX;		
+		var y = event.offsetY;		
+		let points = new Point(x, y);
+		parray.push(points);
+		pcount++;
+		if (pcount > 1)
+			drawLine(parray[pcount-1].x, parray[pcount-1].y, parray[pcount-2].x, parray[pcount-2].y);	
+	}
+	if (event.which == 2){			
+		b_points = B_Point(parray, 0.01);
+		B_Line(b_points, 1);
+		for (i = 0; i < pcount-1; i++)
+			parray.shift();
+		pcount = 1
+	}	
+}
+</script>
+</canvas>
+</BODY>
+</HTML>
